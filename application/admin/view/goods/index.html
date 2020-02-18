@@ -1,0 +1,96 @@
+<a class="layui-btn layui-btn-radius layui-btn-normal" href="{:url('create')}">添加商品</a>
+<div style="margin-top:10px;">
+  <form class="layui-form" action="">
+      <div class="layui-input-inline">
+        <select name="cate_id">
+          <option value="">请选择分类</option>
+          {volist name="cate" id="cate"}
+          <option value="{$cate.cate_id}">{:str_repeat("&ensp;",$cate.lev*5)}{$cate.cate_name}</option>
+          {/volist}
+        </select>
+      </div>
+      <div class="layui-input-inline">
+        <select name="brand_id">
+          <option value="">请选择品牌</option>
+          {volist name="brand" id="brand"}
+          <option value="{$brand.brand_id}">{$brand.brand_name}</option>
+          {/volist}
+        </select>
+      </div>
+      <div class="layui-input-inline">
+        <input type="text" name="goods_name" placeholder="请输入商品关键字" autocomplete="off" class="layui-input">
+      </div>
+      <div class="layui-input-inline">
+        <button class="layui-btn" lay-submit lay-filter="search">搜索</button>
+      </div>
+  </form>
+</div>
+<table id="demo" lay-filter="test">
+  <script type="text/html" id="cateTpl">
+    {{d.cate.cate_name}}
+  </script>
+  <script type="text/html" id="brandTpl">
+    {{d.brand.brand_name}}
+  </script>
+  <script type="text/html" id="imgTpl">
+    <img src="{{d.goods_img}}" width="30" height="30">
+  </script>
+  <script type="text/html" id="czTpl">
+      <div class="layui-btn-group">
+        <button class="layui-btn layui-btn-sm" lay-event="edit">
+          <i class="layui-icon">&#xe642;</i>
+        </button>
+        <button class="layui-btn layui-btn-sm" lay-event="del">
+          <i class="layui-icon">&#xe640;</i>
+        </button>
+      </div>
+  </script>
+</table>
+<script type="text/javascript">
+  layui.use(['table','form','jquery'],function(){
+    var table = layui.table,form = layui.form,$ = layui.jquery;
+    var tableIns = table.render({
+     elem:'#demo'
+     ,url:"{:url('indexData')}"
+     ,page:true
+     ,limit:2
+     ,limits:[2,4,6,8,10]
+     ,cols:[[
+        {field:'goods_id',title:'编号',width:50},
+        {field:'goods_name',title:'商品名称'},
+        {field:'goods_price',title:'价格'},
+        {field:'goods_up',title:'是否上架'},
+        {field:'goods_num',title:'库存'},
+        {title:'封面图',templet: '#imgTpl'},
+        {title:'分类',templet: '#cateTpl'},
+        {title:'品牌',templet: '#brandTpl'},
+        {title:'操作',templet: '#czTpl'},
+     ]]
+    });
+    table.on('tool(test)', function(obj){
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的DOM对象
+        if(layEvent === 'del'){ //删除
+          layer.confirm('真的删除行么', function(index){
+            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+          });
+        } else if(layEvent === 'edit'){ //编辑
+          location.href = '{:url("edit")}?goods_id='+data.goods_id;
+          
+          //同步更新缓存对应的值
+          obj.update({
+            username: '123'
+            ,title: 'xxx'
+          });
+        }
+    });
+    form.on("submit(search)",function(data){
+      tableIns.reload({
+        where: data.field
+        ,page: {curr: 1 }
+      });
+      return false;
+    });
+  });
+</script>

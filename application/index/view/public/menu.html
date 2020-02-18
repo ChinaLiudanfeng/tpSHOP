@@ -1,0 +1,44 @@
+<div class="menu_bg">
+	<div class="menu">
+    	<!--Begin 商品分类详情 Begin-->    
+    	<div class="nav">
+        	<div class="nav_t">全部商品分类</div>
+            <div class="{$leftNav}">
+                <ul>
+                {volist name="cate" id="v"}      
+                    <li>
+                    	<div class="fj">
+                        	<span class="n_img"><span></span><img src="/static/index/images/nav1.png" /></span>
+                            <span class="fl">{$v.cate_name}</span>
+                        </div>
+                        <div class="zj">
+                            <div class="zj_l">
+                                {volist name="v.son" id="vv"}
+                                    <div class="zj_l_c">
+                                        <h2>{$vv.cate_name}</h2>
+                                    {volist name="vv.son" id="vvv"}
+                                        <a href="#">{$vvv.cate_name}</a>|
+                                    {/volist}
+                                    </div>
+                                {/volist}
+                            </div>
+                           <div class="zj_r">
+                                <a href="#"><img src="/static/index/images/n_img1.jpg" width="236" height="200" /></a>
+                                <a href="#"><img src="/static/index/images/n_img2.jpg" width="236" height="200" /></a>
+                            </div>
+                        </div>
+                    </li>
+                {/volist}                    	
+                </ul>            
+            </div>
+        </div>  
+        <!--End 商品分类详情 End-->                                                     
+    	<ul class="menu_r">
+            <li><a href="{:url('Goods/index')}">全部商品</a></li>
+            {volist name="nav" id="nav"}
+                <li><a href="{:url('goods/index')}?cate_id={$nav.cate_id}">{$nav.cate_name}</a></li>
+            {/volist}
+        </ul>
+        <div class="m_ad">中秋送好礼！</div>
+    </div>
+</div>

@@ -1,0 +1,285 @@
+{layout name="layout/layout_index" /}
+<!--Begin Header Begin-->
+{include file="public/sousuo"}
+<!--End Header End--> 
+<!--Begin Menu Begin-->
+<script type="text/javascript" src="__STATIC__/index/js/n_nav.js"></script>
+{include file="public/menu" /}
+<!--End Menu End--> 
+<div class="i_bg">  
+    <div class="content mar_20">
+    	<img src="__STATIC__/index/images/img1.jpg" />        
+    </div>
+    
+    <!--Begin 第一步：查看购物车 Begin -->
+    <div class="content mar_20">
+    	<table border="0" class="car_tab" style="width:1200px; margin-bottom:50px;" cellspacing="0" cellpadding="0">
+          <tr>
+            <td class="car_th">
+                <input type="checkbox" name="" id="allBox">全选
+            </td>
+            <td class="car_th">商品名称</td>
+            <td class="car_th">单价</td>
+            <td class="car_th">购买数量</td>
+            <td class="car_th">小计</td>
+            <td class="car_th">操作</td>
+          </tr>
+          {volist name="cartInfo" id="v"}
+          <tr goods_id="{$v.goods_id}" goods_number="{$v.goods_num}">
+            <td align="center">
+                <input type="checkbox" class="box">
+            </td>
+            <td>
+            	<div class="c_s_img"><img src="/uploads1/{$v.goods_img}" width="73" height="73" /></div>
+                {$v.goods_name}
+            </td>
+            <td align="center">{$v.goods_price}</td>
+            <td align="center">
+            	<div class="c_num">
+                    <input type="button" class="car_btn_1 on" />
+                	<input type="text" value="{$v.buy_number}" name="" class="car_ipt ipt" />  
+                    <input type="button" class="car_btn_2 out" />
+                </div>
+            </td>
+            <td align="center" style="color:#ff4e00;">￥{$v.goods_price*$v.buy_number}</td>
+            <td align="center"><a href="javascript:;" class="del">删除</a>&nbsp; &nbsp;<a href="#">加入收藏</a></td>
+          </tr>
+          {/volist}
+          <tr height="70">
+          	<td colspan="6" style="font-family:'Microsoft YaHei'; border-bottom:0;">
+            	<label class="r_txt"><a href="javascript:;" id="delMany">点击批量删除</a></label>
+                <span class="fr">商品总价：<b style="font-size:22px; color:#ff4e00;" id="totalprice">￥0</b></span>
+            </td>
+          </tr>
+          <tr valign="top" height="150">
+          	<td colspan="6" align="right">
+            	<a href="{:url('Index/index')}"><img src="__STATIC__/index/images/buy1.gif" /></a>&nbsp; &nbsp; 
+                <a href="javascript:;" id="settlement"><img src="__STATIC__/index/images/buy2.gif" /></a>
+            </td>
+          </tr>
+        </table>
+        
+    </div>
+	<!--End 第一步：查看购物车 End--> 
+    
+    
+    <!--Begin 弹出层-删除商品 Begin-->
+    <div id="fade" class="black_overlay"></div>
+    <div id="MyDiv" class="white_content">             
+        <div class="white_d">
+            <div class="notice_t">
+                <span class="fr" style="margin-top:10px; cursor:pointer;" onclick="CloseDiv('MyDiv','fade')"><img src="__STATIC__/index/images/close.gif" /></span>
+            </div>
+            <div class="notice_c">
+           		
+                <table border="0" align="center" style="font-size:16px;" cellspacing="0" cellpadding="0">
+                  <tr valign="top">
+                    <td>您确定要把该商品移除购物车吗？</td>
+                  </tr>
+                  <tr height="50" valign="bottom">
+                    <td><a href="#" class="b_sure">确定</a><a href="#" class="b_buy">取消</a></td>
+                  </tr>
+                </table>
+                    
+            </div>
+        </div>
+    </div>    
+    <!--End 弹出层-删除商品 End-->
+<script type="text/javascript">
+    
+    $(document).ready(function(){
+        layui.use(['layer'],function(){
+            var layer = layui.layer;
+            // 点击-
+            $(document).on('click','.on',function(){
+                var _this = $(this);
+                // 1、把文本框的内容-1 减到1不能再减，
+                var buy_number = parseInt($(this).next('input').val());
+                if(buy_number<=1){
+                    $(this).next('input').val(1);
+                }else{
+                    buy_number -=1;
+                    $(this).next('input').val(buy_number);
+                }
+                // 2、同时更改数据库购买数量
+                var goods_id = _this.parents('tr').attr('goods_id');
+                changeGoodsNumber(goods_id,buy_number);
+                // 3、重新获取小计
+                getSubtotal(goods_id,_this);
+                // 4、给当前复选框选中
+                boxChecked(_this);
+                // 5、重新获取总价
+                getTotalPrice();
+            });
+             
+            // 点击+
+            $(document).on('click','.out',function(){
+                var _this = $(this);
+                //当前文本框内容+1 大于等于库存不能再加
+                var buy_number = parseInt(_this.prev('input').val());
+                var goods_number = parseInt(_this.parents('tr').attr('goods_number'));
+                if(buy_number>=goods_number){
+                    _this.prev('input').val(goods_number)
+                }else{
+                    buy_number += 1;
+                    _this.prev('input').val(buy_number)
+                }
+                // 2、同时更改数据库购买数量
+                var goods_id = _this.parents('tr').attr('goods_id');
+                changeGoodsNumber(goods_id,buy_number);
+                // 3、重新获取小计
+                getSubtotal(goods_id,_this);
+                // 4、给当前复选框选中
+                boxChecked(_this);
+                // 5、重新获取总价
+                getTotalPrice();
+            });
+
+            // 失去焦点
+            $(document).on('blur','.ipt',function(){
+                var _this = $(this);
+                //不是数字或者小于1时，当前文本框中内容变为1
+                //大于等于库存时，当前文本框内容为库存
+                //其他情况，当前文本框内容为整形数字
+                var buy_number = parseInt(_this.val());
+                var goods_number = parseInt(_this.parents('tr').attr('goods_number'));
+                var reg = /^\d{1,}$/;
+                if(!reg.test(buy_number)||buy_number<1){
+                    _this.val(1);
+                }else if(buy_number>=goods_number){
+                    _this.val(goods_number);
+                }else{
+                    _this.val(buy_number);
+                }
+                // 2、同时更改数据库购买数量
+                var goods_id = _this.parents('tr').attr('goods_id');
+                changeGoodsNumber(goods_id,buy_number);
+                // 3、重新获取小计
+                getSubtotal(goods_id,_this);
+                // 4、给当前复选框选中
+                boxChecked(_this);
+                // 5、重新获取总价
+                getTotalPrice();
+            });
+
+            //点击复选框
+            $(document).on('click','.box',function(){
+                getTotalPrice();
+            });
+
+            //点击全选
+            $(document).on('click','#allBox',function(){
+                var _this = $(this);
+                //点击全选，下面所有.box的复选框为选中状态
+                var status = _this.prop('checked');
+                $('.box').prop('checked',status);
+                //获取总价
+                getTotalPrice();
+            });
+
+            //点击删除
+            $(document).on('click','.del',function(){
+                var _this = $(this);
+                var goods_id = _this.parents('tr').attr('goods_id');
+                $.post(
+                    "{:url('Cart/cartDel')}",
+                    {goods_id:goods_id},
+                    function(msg){
+                        if(msg==1){
+                            _this.parents('tr').remove();
+                        }
+                    }
+                );
+                // 从新获取总价
+                getTotalPrice();
+            });
+
+            //点击批删
+            $(document).on('click','#delMany',function(){
+                var box = $('.box:checked');
+                var goods_id = "";
+                box.each(function(i){
+                    goods_id += $(this).parents('tr').attr('goods_id')+",";
+                });
+                goods_id = goods_id.substr(0,goods_id.length-1);
+                $.post(
+                    "{:url('Cart/cartDel')}",
+                    {goods_id:goods_id},
+                    function(msg){
+                        if(msg==1){
+                            box.each(function(i){
+                                $(this).parents('tr').remove();
+                            });
+                        }
+                    }
+                );
+                getTotalPrice();
+            });
+
+            //点击确认结算
+            $(document).on('click','#settlement',function(){
+                var _box = $('.box:checked');
+                if(_box.length>0){
+                    var goods_id = "";
+                    _box.each(function(i){
+                        goods_id += $(this).parents('tr').attr('goods_id')+",";
+                    });
+                    goods_id = goods_id.substr(0,goods_id.length-1);
+                    location.href = "{:url('Cart/settlement')}?goods_id="+goods_id;
+                }else{
+                    alert('请至少选择一件商品');
+                }
+            });
+
+            //修改数据库购买数量
+            function changeGoodsNumber(goods_id,buy_number){
+                $.ajax({
+                    url:"{:url('cart/changeGoodsNumber')}",
+                    method:'post',
+                    data:{goods_id:goods_id,buy_number:buy_number},
+                    dataType:"json",
+                    async:false,
+                    success:function(msg){
+                        if(msg.err==0){
+                            layer.msg(msg.msg,{icon:msg.icon});
+                        }
+                    }
+                });
+            }
+
+            //重新获取小计
+            function getSubtotal(goods_id,_this){
+                $.post(
+                    "{:url('Cart/getSubtotal')}",
+                    {goods_id:goods_id},
+                    function(msg){
+                        _this.parents('td').next('td').text('￥'+msg);
+                    },
+                    'json'
+                );
+            }
+
+            //给当前复选框选中
+            function boxChecked(_this){
+                _this.parents('tr').find('input[class="box"]').prop('checked',true);
+            }
+
+            //重新获取总价
+            function getTotalPrice(){
+                var gid = "";
+                $('.box:checked').each(function(i){
+                    gid += $(this).parents('tr').attr('goods_id')+",";
+                });
+                $.post(
+                    "{:url('Cart/getTotalPrice')}",
+                    {gid:gid},
+                    function(msg){
+                        $('#totalprice').text("￥"+msg);
+                    }
+                );
+            }
+
+
+        });
+    });
+</script>

@@ -1,0 +1,200 @@
+{layout name="layout/layout_index" /}
+{include file="public/member_top" /}
+	<div class="m_content">
+    {include file="public/member_left" /}
+		<div class="m_right">
+            <p></p>
+            <div class="mem_tit" >收货地址</div>
+              <div style="height:450px;border: 1px solid #eaeaea;overflow: auto">
+                {volist name="addressInfo" id="v"}
+    			       <div class="address">
+                	<div class="a_close"><a href="javascript:;" class="del" address_id="{$v.address_id}"><img src="__STATIC__/index/images/a_close.png" /></a></div>
+                	<table border="0" class="add_t" align="center" style="width:98%; margin:10px auto;" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="right" width="80">收货人姓名：</td>
+                        <td>{$v.address_name}</td>
+                      </tr>
+                      <tr>
+                        <td align="right">配送区域：</td>
+                        <td>{$v.address}</td>
+                      </tr>
+                      <tr>
+                        <td align="right">详细地址：</td>
+                        <td>{$v.address_detail}</td>
+                      </tr>
+                      <tr>
+                        <td align="right">手机：</td>
+                        <td>{$v.address_tel}</td>
+                      </tr>
+                    </table>
+    				
+                    <p align="right">
+                      {if $v.is_default==1}
+                        <a style="color:blue;">当前默认地址</a>&nbsp; &nbsp; &nbsp; &nbsp;
+                      {else if /}
+                        <a href="javascript:;" style="color:#ff4e00;" class="default" address_id="{$v.address_id}">设为默认</a>&nbsp; &nbsp; &nbsp; &nbsp; 
+                      {/if}
+                      <a href="{:url('addressEdit')}?address_id={$v.address_id}" style="color:#ff4e00;">编辑</a>&nbsp; &nbsp; &nbsp; &nbsp; 
+                    </p>
+                </div>
+                {/volist}
+              </div>
+              <br>
+            <form id="form">
+            <table border="0" class="add_tab" style="width:930px;"  cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="135" align="right">配送地区</td>
+                <td colspan="3" style="font-family:'宋体';">
+                	<select class="province" name="province">
+                      <option value="0" selected="selected">请选择...</option>
+                    {volist name="province" id="v"}
+                      <option value="{$v.id}">{$v.name}</option>
+                    {/volist}
+                    </select>
+                    <select class="province" name="city">
+                      <option value="0" selected="selected">请选择...</option>
+                    </select>
+                    <select class="province" name="area">
+                      <option value="0" selected="selected">请选择...</option>
+                    </select>
+                    （必填）
+                </td>
+              </tr>
+              <tr>
+                <td align="right">收货人姓名</td>
+                <td style="font-family:'宋体';"><input type="text" class="add_ipt" name="address_name" />（必填）</td>
+                <td align="right">手机号</td>
+                <td style="font-family:'宋体';"><input type="text" class="add_ipt" name="address_tel" />（必填）</td>
+              </tr>
+              <tr>
+                <td align="right">详细地址</td>
+                <td style="font-family:'宋体';"><input type="text" class="add_ipt" name="address_detail" />（必填）</td>
+                <td align="right">邮政编码</td>
+                <td style="font-family:'宋体';"><input type="text" class="add_ipt" name="address_mail" /></td>
+              </tr>
+              <tr>
+                <td colspan="4">
+                  <input type="checkbox" name="id_default" id="default">设为默认地址
+                </td>
+              </tr>
+            </table>
+           	<p align="right">
+            	<a href="javascript:;" class="add_b" id="sb">添加</a>
+            </p> 
+           </form>
+
+            
+        </div> 
+        <script type="text/javascript">
+          $(function(){
+           layui.use('layer',function(){
+            var layer = layui.layer;
+             //三级联动省市区
+            $('.province').change(function(){
+              var _this = $(this);
+              _this.nextAll('select').html("<option value='0'>请选择...</option>");
+              var id = _this.val();
+              $.post(
+                "{:url('Address/getArea')}",
+                {id:id},
+                function(msg){
+                  var option = "<option value='0'>请选择...</option>";
+                  for(var i in msg){
+                    option += "<option value='"+msg[i]['id']+"'>"+msg[i]['name']+"</option>";
+                  }
+                  _this.next('select').html(option);
+                },
+                'json'
+              );
+            });
+
+            //点击添加收货地址
+            $(document).on('click','#sb',function(){
+              var  province = $('select[name="province"]').val();
+              var  city = $('select[name="city"]').val();
+              var  area = $('select[name="area"]').val();
+              var  address_name = $('input[name="address_name"]').val();
+              var  address_tel = $('input[name="address_tel"]').val();
+              var  address_detail = $('input[name="address_detail"]').val();
+              var  address_mail = $('input[name="address_mail"]').val();
+              var  is_default = $('#default').prop('checked');
+              if(province==0||city==0||area==0){
+                alert('配送地区必填');
+              }else if(address_name==""||address_tel == "" || address_detail==""){
+                alert('请填写必填选项');
+              }else{
+                if(is_default==true){
+                  is_default = 1;
+                }else{
+                  is_default = 2;
+                }
+                $.post(
+                  "{:url('Address/addressAdd')}",
+                  {province:province,city:city,area:area,address_name:address_name,address_tel:address_tel,address_detail:address_detail,address_mail:address_mail,is_default:is_default},
+                  function(msg){
+                    layer.msg(msg.msg,{icon:msg.icon,time:1000},function(){
+                      if(msg.err == 1){
+                        location.href = "{:url('Address/addressList')}";
+                      }
+                    });
+                  },
+                  'json'
+                );
+              }
+            });
+
+            //设为默认地址
+            $(document).on('click','.default',function(){
+              var _this = $(this);
+              var address_id = _this.attr('address_id');
+              $.post(
+                "{:url('Address/addressSetDefault')}",
+                {address_id:address_id},
+                function(msg){
+                  layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                    if(msg.err == 1){
+                      location.href = "{:url('Address/addressList')}";
+                    }
+                  });
+                },
+                'json'
+              );
+            });
+
+            //点击删除
+            $(document).on('click','.del',function(){
+              var _this = $(this);
+              var address_id = _this.attr('address_id');
+              $.post(
+                "{:url('Address/addressDel')}",
+                {address_id:address_id},
+                function(msg){
+                  layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                    if(msg.err == 1){
+                      _this.parents('div[class="address"]').remove();
+                    }
+                  });
+                },
+                'json'
+              );
+
+            });
+
+            //点击编辑
+            $(document).on('click','.edit',function(){
+              var _this = $(this);
+              var address_id = _this.attr('address_id');
+              $.post(
+                "{:url('edit')}",
+                {address_id:address_id},
+                function(msg){
+                  console.log(msg);
+                },
+                'json'
+              );
+            });
+
+           });
+
+          })
+        </script>

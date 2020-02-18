@@ -1,0 +1,110 @@
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+  <legend>方框风格的表单集合</legend>
+</fieldset>
+<form class="layui-form layui-form-pane" action="">
+  <div class="layui-form-item">
+    <label class="layui-form-label">姓名</label>
+    <div class="layui-input-block">
+      <input type="text" name="a_name" value="{$data.a_name}" lay-verify="required|title" autocomplete="off" placeholder="请输入标题" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">邮箱</label>
+    <div class="layui-input-inline">
+      <input type="text" name="a_email" value="{$data.a_email}" lay-verify="required|email" placeholder="请输入" autocomplete="off" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item" pane="">
+    <label class="layui-form-label">状态</label>
+    <div class="layui-input-block">
+      <input type="radio" name="status" value="1" title="正常" {eq name="$data.status" value="正常"}checked=""{/eq}>
+      <input type="radio" name="status" value="2" title="冻结" {eq name="$data.status" value="冻结"}checked=""{/eq}>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <input type="hidden" name="id" value="{$data.id}">
+    <button class="layui-btn" lay-submit="" lay-filter="demo2">跳转式提交</button>
+  </div>
+</form>
+
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+layui.use(['form', 'layedit', 'laydate'], function(){
+  var form = layui.form
+  ,layer = layui.layer
+  ,layedit = layui.layedit
+  ,laydate = layui.laydate;
+  
+  //日期
+  laydate.render({
+    elem: '#date'
+  });
+  laydate.render({
+    elem: '#date1'
+  });
+  
+  //创建一个编辑器
+  var editIndex = layedit.build('LAY_demo_editor');
+ 
+  //自定义验证规则
+  form.verify({
+    title: function(value){
+      if(value.length < 6 || value.length >24){
+        return '标题至少得5个字符,最大24个字符';
+      }
+    }
+    ,pass: [
+      /^[\S]{6,12}$/
+      ,'密码必须6到12位，且不能出现空格'
+    ]
+    ,repwd:function(value){
+      var pwd = $('#pwd').val();
+      if(pwd!=value){
+        return '两次密码不一致';
+      }
+    }
+    ,content: function(value){
+      layedit.sync(editIndex);
+    }
+  });
+  
+  //监听指定开关
+  form.on('switch(switchTest)', function(data){
+    layer.msg('开关checked：'+ (this.checked ? 'true' : 'false'), {
+      offset: '6px'
+    });
+    layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
+  });
+  
+  //监听提交
+  form.on('submit(demo2)', function(data){
+    // layer.alert(JSON.stringify(data.field), {
+    //   title: '最终的提交信息'
+    // })
+      $.ajax({
+        url:'{:url("update")}',
+        type:'post',
+        data:data.field,
+        dataType:'json',
+        success:function(msg){
+          layer.msg(msg.msg,{icon:msg.err});
+          if(msg.err == 1){
+            location.href = '{:url("list")}';
+          }
+        }
+      })
+    return false;
+    });
+  });
+</script>
+    </div>
+  </div>
+  
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © layui.com - 底部固定区域
+  </div>
+</div>
+
+</script>
+<!-- {/block} -->

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+	<table align="center" border="1">
+		<tr>
+			<th>编号</th>
+			<th>用户名</th>
+			<th>类型</th>
+			<th>评论对象</th>
+			<th>ID地址</th>
+			<th>评论时间</th>
+			<th>状态</th>
+			<th>操作</th>
+		</tr>
+		{volist name="info" id="v"}
+		<tr c_id="{$v.c_id}">
+			<th>{$v.c_id}</th>
+			<th>
+			{if $v.user_name=="匿名用户"}
+				{$v.user_name}
+			{else /}
+				{$v.user_email}
+			{/if}
+			</th>
+			<th>{$v.type}</th>
+			<th>{$v.goods_name}</th>
+			<th>{$v.user_ip}</th>
+			<th>{:date("Y-m-d H:i:s",$v.create_time)}</th>
+			<th class="status">{$v.status}</th>
+			<th><a href="{:url('revert')}">回复</a></th>
+		</tr>
+		{/volist}
+		<tr>
+			<td colspan="8">{$info|raw}</td>
+		</tr>
+	</table>
+</body>
+</html>
+<script type="text/javascript">
+	$(document).on('click','.status',function(){
+		var _this = $(this);
+		var _status = _this.text();
+		var status = 1;
+		var c_id = _this.parents('tr').attr('c_id');
+		if(_status=="显示"){
+			_this.text('隐藏');
+			status = 2;
+		}else{
+			_this.text('显示');
+			status = 1;
+		}
+		$.post(
+			"{:url('upd')}",
+			{c_id:c_id,status:status},
+			function(msg){
+				console.log(msg);
+			}
+		);
+	});
+</script>

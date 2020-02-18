@@ -1,0 +1,53 @@
+<form class="layui-form" action="">
+  <div class="layui-form-item">
+    <label class="layui-form-label">分类名称</label>
+    <div class="layui-input-block">
+      <input type="text" name="brand_name" required value="{$brand.brand_name}" placeholder="请输入标题" autocomplete="off" class="layui-input">
+    </div> 
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">是否显示</label>
+    <div class="layui-input-block">
+      <input type="radio" name="brand_show" value="1" title="是" {eq name="brand.brand_show" value="是"}checked{/eq}>
+      <input type="radio" name="brand_show" value="2" title="否" {eq name="brand.brand_show" value="否"}checked{/eq}>
+    </div>
+  </div>
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">商品介绍</label>
+    <div class="layui-input-block">
+      <textarea name="brand_describe" placeholder="请输入内容" class="layui-textarea">{$brand.brand_describe}</textarea>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <input type="hidden" name="brand_id" value="{$brand.brand_id}">
+      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+</form>
+ 
+<script>
+//Demo
+layui.use(['form','jquery','layer'], function(){
+  var form = layui.form,$ = layui.jquery,layer = layui.layer;
+  
+  //监听提交
+  form.on('submit(formDemo)', function(data){
+    // layer.msg(JSON.stringify(data.field));
+    $.post(
+      "{:url('update')}",
+      data.field,
+      function(msg){
+        layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+          if(msg.err == 1){
+            location.href = "{:url('index')}";
+          }
+        });
+      },
+      'json'
+    )
+    return false;
+  });
+});
+</script>

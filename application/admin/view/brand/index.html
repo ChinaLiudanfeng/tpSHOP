@@ -1,0 +1,156 @@
+<a href="{:url('create')}" class="layui-btn layui-btn-radius layui-btn-warm">添加品牌</a>
+<table class="layui-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>商品名称</th>
+      <th>商品介绍</th>
+      <th>商品logo</th>
+      <th>是否显示</th>
+      <th>添加时间</th>
+      <th>操作</th>
+    </tr> 
+  </thead>
+  <tbody>
+    {volist name="data" id="data"}
+    <tr brand_id="{$data.brand_id}">
+      <td align="center">{$data.brand_id}</td>
+      <td class="td">{$data.brand_name}</td>
+      <td>{$data.brand_describe}</td>
+      <td><img src="{$data.brand_logo}" width="60" height="60"></td>
+      <td>{$data.brand_show}</td>
+      <td>{$data.brand_time}</td>
+      <td>
+        [<a href="{:url('edit',['id'=>$data.brand_id])}">编辑</a>]
+        [<a href="javascript:void(0)" class="del">删除</a>]
+      </td>
+    </tr>
+    {/volist}
+  </tbody>
+  <script type="text/javascript">
+    layui.use(['jquery'],function(){
+        var $ = layui.jquery;
+        $('.td').click(function(){
+          var td = $(this),text = td.text(),input = $('<input type="text">').css({'border':0}).val(text),id = td.parent('tr').attr('brand_id');
+          if(td.children('input').length>0){
+            return false;
+          }
+          td.html(input);
+          input.select();
+          input.blur(function(){
+            $.ajax({
+              url:"{:url('editTable')}",
+              type:"post",
+              data:{brand_name:input.val(),brand_id:id},
+              dataType:'json',
+              success:function(msg){
+                layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                  if(msg.err == 1){
+                    td.text(input.val());
+                  }else{
+                    td.text(text);
+                  }
+                });
+              }
+            });
+          });
+        });
+        $('.del').click(function(){
+          var del = $(this);
+          var id = del.parents('tr').attr('brand_id');
+          layer.confirm('确定要删除吗？',function(){
+            $.get(
+                "{:url('delete')}",
+                {id:id},
+                function(msg){
+                  layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                    if(msg.err == 1){
+                      del.parents('tr').remove();
+                    }
+                  })
+                },
+                'json'
+              )
+          });
+        });
+    });
+    // //隐藏不是顶级分类的其他分类
+    // $('tr:gt(0)').each(function(){
+    //   var tr = $(this);
+    //   if(tr.attr('pid')!=0){
+    //     tr.hide();
+    //   }
+    // });
+    // //点击事件
+    // $('.a').click(function(){
+    //   var a = $(this),
+    //   brand_id = a.parents('tr').attr('brand_id');
+    //   if(a.text()=="+"){
+    //     a.text('-');
+    //     showTr(brand_id);
+    //   }else{
+    //     a.text('+');
+    //     hideTr(brand_id);
+    //   }
+    // });
+
+    // //显示其他行函数
+    // function showTr(brand_id)
+    // {
+    //   $('tr').each(function(){
+    //     var tr = $(this);
+    //     if(tr.attr('pid')==brand_id){
+    //       tr.show();
+    //     }
+    //   });
+    // }
+    // //隐藏其他行函数
+    // function hideTr(brand_id)
+    // {
+    //   $('tr').each(function(){
+    //     var tr = $(this);
+    //     if(tr.attr('pid')==brand_id){
+    //       tr.hide();
+    //       hideTr(tr.attr('brand_id'));
+    //     }
+    //   });
+    // }
+    // //隐藏不是顶级的所有分类
+    // $('tr:gt(0)').each(function(){
+    //   var tr = $(this);
+    //   if(tr.attr('pid')!=0){
+    //     tr.hide();
+    //   }
+    // })
+    // //点击事件
+    // $('.a').click(function(){
+    //   var a = $(this),brand_id = a.parents('tr').attr('brand_id');
+    //   if(a.text()=="+"){
+    //     a.text('-');
+    //     showTr(brand_id);
+    //   }else{
+    //     a.text('+');
+    //     hideTr(brand_id);
+    //   }
+    // });
+    // //显示函数
+    // function showTr(brand_id){
+    //   $('tr').each(function(){
+    //     var tr = $(this);
+    //     if(tr.attr('pid')==brand_id){
+    //       tr.show();
+    //     }
+    //   });
+    // }
+    // //隐藏函数
+    // function hideTr(brand_id){
+    //   $('tr').each(function(){
+    //     var tr = $(this);
+    //     if(tr.attr('pid')==brand_id){
+    //       tr.hide();
+    //       hideTr(tr.attr('brand_id'));
+    //     }
+    //   });
+    // }
+  </script>
+</table>

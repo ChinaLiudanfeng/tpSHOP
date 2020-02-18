@@ -1,0 +1,11 @@
+{volist name="info" id="v"}
+<tr>
+	<td>{$v.log_id}</td>
+	<td>{$v.user_name}</td>
+	<td>{:date('Y-m-d H:i:s',$v.log_time)}</td>
+	<td>{$v.log_ip}</td>
+</tr>
+{/volist}
+<tr>
+	<td colspan="4">{$str|raw}</td>
+</tr>

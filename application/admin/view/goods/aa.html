@@ -1,0 +1,44 @@
+<table border="1">
+  <tr>
+    <th>
+      <input type="checkbox" id="ck">全选
+    </th>
+    <th>商品名称</th>
+  </tr>
+  {volist name="data" id="data"}
+    <tr>
+      <td>
+        <input type="checkbox" name="{$data.goods_id}">
+      </td>
+      <td>{$data.goods_name}</td>
+    </tr>
+  {/volist}
+    <tr>
+      <td>
+        <button id="bt">反选</button>
+      </td>
+      <td></td>
+    </tr>
+</table>
+<script type="text/javascript">
+  $(function(){
+    $('#ck').click(function(){
+      var ck = $(this).prop('checked');
+      // console.log(ck);
+      if(ck){
+        $(':checkbox').prop('checked',true);
+      }else{
+        $(':checkbox').prop('checked',false);
+      }
+    });
+    $('#bt').click(function(){
+      $(':checkbox:gt(0)').each(function(){
+        if($(this).prop('checked')){
+          $(this).prop('checked',false);
+        }else{
+          $(this).prop('checked',true);
+        }
+      });
+    });
+  })
+</script>

@@ -1,0 +1,111 @@
+<a href="{:url('admin/category/create')}" class="layui-btn layui-btn-radius layui-btn-normal">添加分类</a>
+<table class="layui-table">
+  <thead>
+    <tr>
+      <th>展开/收起</th>
+      <th>名称</th>
+      <th>是否显示</th>
+      <th>导航显示</th>
+      <th>操作</th>
+    </tr> 
+  </thead>
+  <tbody>
+    {volist name="data" id="data"}
+    <tr cate_id="{$data.cate_id}" pid="{$data.cate_pid}">
+      <td><button class="layui-btn layui-btn-sm layui-btn-normal"><a class="bt" href="javascript:void(0)">展开</a></button></td>
+      <td class="td">{:str_repeat('&ensp;',$data.lev*8)}{$data.cate_name}</td>
+      <td>{$data.cate_show}</td>
+      <td>{$data.cate_nav}</td>
+      <td>
+        [<a href="{:url('edit',['id'=>$data.cate_id])}">编辑</a>]
+        [<a href="javascript:void(0)" class="del">删除</a>]
+      </td>
+    </tr>
+    {/volist}
+  </tbody>
+  <script type="text/javascript">
+    layui.use(['jquery','layer'],function(){
+      var $ = layui.jquery, layer = layui.layer;
+      $(".td").click(function(){
+          var _this = $(this), 
+              cate_id = _this.parent('tr').attr('cate_id');
+              _text = _this.text(),
+              _input = $('<input type="text" name="cate_name">').css({'border':'0','background-color':_this.css('background-color')}).val(_text);
+          if(_this.children('input').length>0){
+            return false;
+          }
+          _this.html(_input);
+          _input.select();
+          _input.blur(function(){
+            $.ajax({
+              url:'{:url("editTable")}',
+              method:'post',
+              data:{cate_id:cate_id,cate_name:_input.val()},
+              dataType:'json',
+              success:function(msg){
+                layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                  if(msg.err == 1){
+                    _this.text(_input.val());
+                  }else{
+                    _this.text(_text);
+                  }
+                });
+              }
+            })
+          })
+
+      })
+      $('.del').click(function(){
+        var del = $(this);
+        layer.confirm('确定要删除吗？',function(){
+          $.post(
+          "{:url('delete')}",
+          {cate_id:del.parents('tr').attr('cate_id')},
+          function(msg){
+            layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+                if(msg.err == 1){
+                  del.parents('tr').remove();
+                }
+            })
+          },
+          'json',
+          )
+        })
+      });
+    })
+    $('tr:gt(0)').each(function(){
+        var tr = $(this);
+        if(tr.attr('pid')!=0){
+          tr.hide();
+        }
+    })
+    $('.bt').click(function(){
+        var bt = $(this);
+        var cate_id = bt.parents('tr').attr('cate_id');
+        if(bt.text()=="展开"){
+          bt.text('收起');
+          showTr(cate_id);
+        }else{
+          bt.text('展开');
+          hideTr(cate_id);
+        }
+    })
+    function showTr(cate_id){
+      $('tr').each(function(){
+        var tr = $(this);
+        if(tr.attr('pid') == cate_id){
+          tr.show();
+        }
+      })
+    }
+    function hideTr(cate_id){
+      $('tr').each(function(){
+        var tr = $(this);
+        if(tr.attr('pid') == cate_id){
+          tr.hide();
+          hideTr(tr.attr('cate_id'));
+        }
+      })
+    }
+  </script>
+</table>

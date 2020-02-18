@@ -1,0 +1,66 @@
+<form class="layui-form layui-form-pane" action="">
+  <div class="layui-form-item">
+    <label class="layui-form-label">输入框</label>
+    <div class="layui-input-block">
+      <input type="text" name="name" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">上传图片</label>
+    <input type="hidden" name="path" id="ipt">
+    <div class="layui-input-block">
+      <button type="button" class="layui-btn" id="test1">
+        <i class="layui-icon">&#xe67c;</i>点击上传
+      </button>
+      <img width="30" height="30" alt="暂无图片">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+</form>
+ 
+<script>
+//Demo
+layui.use(['form','upload'], function(){
+  var form = layui.form,upload = layui.upload;
+  
+  //监听提交
+  form.on('submit(formDemo)', function(data){
+    $.post(
+      "{:url('save')}",
+      data.field,
+      function(msg){
+        layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+          if(msg.err == 1){
+            location.href = "{:url('index')}";
+          }
+        });
+      },
+      'json'
+    );
+    return false;
+  });
+
+  //图片上传
+  upload.render({
+    elem: '#test1' //绑定元素
+    ,url: '{:url("upload")}' //上传接口
+    ,choose: function(obj){
+      obj.preview(function(index, file, result){
+        $('img').prop('src',result);
+      });
+    }
+    ,done: function(msg){
+      layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+        if(msg.err == 1){
+          $('#ipt').val(msg.path);
+        }
+      });
+    }
+  });
+});
+</script>

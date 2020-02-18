@@ -1,0 +1,81 @@
+<form class="layui-form" action="">
+  <div class="layui-form-item">
+    <label class="layui-form-label">分类名称</label>
+    <div class="layui-input-block">
+      <input type="text" name="brand_name" required  placeholder="请输入标题" autocomplete="off" class="layui-input">
+    </div> 
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">是否显示</label>
+    <div class="layui-input-block">
+      <input type="radio" name="brand_show" value="1" title="是" checked>
+      <input type="radio" name="brand_show" value="2" title="否">
+    </div>
+  </div>
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">商品介绍</label>
+    <div class="layui-input-block">
+      <textarea name="brand_describe" placeholder="请输入内容" class="layui-textarea"></textarea>
+    </div>
+  </div>
+    <input type="hidden" name="brand_logo" id="brand_logo">
+    <button type="button" class="layui-btn" id="test1">
+    <i class="layui-icon">&#xe67c;</i>上传图片
+    </button>
+    <img src="1" id="img" width="80" alt="暂无图片">
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+</form>
+ 
+<script>
+//Demo
+layui.use(['form','jquery','layer','upload'], function(){
+  var form = layui.form,$ = layui.jquery,layer = layui.layer, upload = layui.upload;
+
+  //文件上传
+  upload.render({
+    elem: '#test1' //绑定元素
+    ,url: '{:url("upload")}' //上传接口
+    ,accept:'images'
+    ,acceptMime:'image/*'
+    ,auto:true
+    ,field:'brand_logofile'
+    ,size:200
+    ,choose:function(obj){
+      obj.preview(function(index, file, result){
+        $('#img').prop('src',result);
+      })
+    }
+    ,done: function(res){
+      layer.msg(res.msg,{icon:res.icon,time:2000},function(){
+        if(res.err == 1){
+          // $('#brand_logo').attr('value',res.path);
+          $('#brand_logo').val(res.path);
+        }
+      })
+    }
+  });
+  
+  //监听提交
+  form.on('submit(formDemo)', function(data){
+    // layer.msg(JSON.stringify(data.field));
+    $.post(
+      "{:url('save')}",
+      data.field,
+      function(msg){
+        layer.msg(msg.msg,{icon:msg.icon,time:2000},function(){
+          if(msg.err == 1){
+            location.href = "{:url('index')}";
+          }
+        });
+      },
+      'json'
+    )
+    return false;
+  });
+});
+</script>
